@@ -1,0 +1,17 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Dane poufne
+.env
+.env.*
+
+# Edytor
+.vscode/
+.idea/
+
+# React
+node_modules/
+dist/
