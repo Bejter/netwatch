@@ -39,20 +39,30 @@ def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
     return db_device
 
 @app.get("/devices/")
-def get_devices(db: Session = Depends(get_db)):
-    devices = db.query(DeviceModel).all()
+def get_devices(is_active: bool = None, limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
+
+    if is_active is not None:
+        devices = db.query(DeviceModel).filter(DeviceModel.is_active == is_active).order_by(DeviceModel.id).offset(offset).limit(limit).all()
+    else:
+        devices = db.query(DeviceModel).order_by(DeviceModel.id).offset(offset).limit(limit).all()
+    
     return devices
 
 @app.get("/devices/{device_id}")
 def get_device(device_id: int, db: Session = Depends(get_db)):
+
     device = db.query(DeviceModel).filter(DeviceModel.id == device_id).first()
+
     if device is None:
         raise HTTPException(status_code=404, detail="Device not found")
+    
     return device
 
 @app.put("/devices/{device_id}")
 def update_device(device_id: int, device: DeviceCreate, db: Session = Depends(get_db)):
+
     db_device = db.query(DeviceModel).filter(DeviceModel.id == device_id).first()
+
     if db_device is None:
         raise HTTPException(status_code=404, detail="Device not found")
     
@@ -68,7 +78,9 @@ def update_device(device_id: int, device: DeviceCreate, db: Session = Depends(ge
 
 @app.delete("/devices/{device_id}")
 def delete_device(device_id: int, db: Session = Depends(get_db)):
+
     db_device = db.query(DeviceModel).filter(DeviceModel.id == device_id).first()
+
     if db_device is None:
         raise HTTPException(status_code=404, detail="Device not found")
     
