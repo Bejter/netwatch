@@ -76,4 +76,4 @@ async def ping_multiple(ip_addresses: list):
 
 
 if __name__ == "__main__":
-    print(asyncio.run(ping_multiple(["192.168.0.1", "8.8.8.8"])))
+    print(asyncio.run(ping_multiple(["192.168.0.11", "192.168.0.12"])))
