@@ -1,9 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends
+import datetime
+from fastapi import FastAPI, HTTPException, Depends, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta, timezone
 
 from app.database import SessionLocal, engine, Base
-from app.models import Device as DeviceModel
+from app.models import Device as DeviceModel, Measurement
 from app.schemas import DeviceCreate
+from app.schemas import  MeasurementResponse
 
 Base.metadata.create_all(bind=engine)
 
@@ -88,3 +92,49 @@ def delete_device(device_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"detail": "Device deleted successfully"}
+
+@app.get("/devices/{device_id}/measurements", response_model=list[MeasurementResponse])
+def get_device_measurements(device_id: int, limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
+    db_device = db.query(DeviceModel).filter(DeviceModel.id == device_id).first()
+
+    if db_device is None:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    measurements = db.query(Measurement).filter(Measurement.device_id == device_id).order_by(Measurement.checked_at.desc()).offset(offset).limit(limit).all()
+
+    return measurements
+
+
+@app.get("/devices/{device_id}/stats")
+def get_device_stats(device_id: int, hours: int | None = Query(default=None, ge=1, le=720), db: Session = Depends(get_db)):
+    db_device = db.query(DeviceModel).filter(DeviceModel.id == device_id).first()
+
+    if db_device is None:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    query = db.query(Measurement).filter(Measurement.device_id == device_id)
+
+    if hours is not None:
+        time_threshold = datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=hours)
+        query = query.filter(Measurement.checked_at >= time_threshold)
+
+    total_measurements = query.count()
+
+    successful_query = query.filter(Measurement.status == "online")
+    successful_measurements = successful_query.count()
+    availability_percentage = (successful_measurements / total_measurements * 100 if total_measurements > 0 else None)
+    avg_latency_ms = successful_query.with_entities(func.avg(Measurement.latency_ms)).scalar()
+    min_latency_ms = successful_query.with_entities(func.min(Measurement.latency_ms)).scalar()
+    max_latency_ms = successful_query.with_entities(func.max(Measurement.latency_ms)).scalar()
+
+    return {
+        "device_id": device_id,
+        "total_measurements": total_measurements,
+        "successful_measurements": successful_measurements,
+        "availability_percentage": availability_percentage,
+        "avg_latency_ms": avg_latency_ms,
+        "min_latency_ms": min_latency_ms,
+        "max_latency_ms": max_latency_ms
+    }
+
+    

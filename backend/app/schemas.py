@@ -15,4 +15,13 @@ class DeviceResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes = True)
 
+class MeasurementResponse(BaseModel):
+    id: int
+    device_id: int
+    status: str
+    latency_ms: float | None
+    checked_at: datetime
+
+    model_config = ConfigDict(from_attributes = True)
+
     
