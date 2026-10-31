@@ -18,14 +18,17 @@ function Placeholder({ title }: { title: string }) {
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen bg-[#0B0B15] text-white">
-        <Sidebar />
+      <div className="flex h-screen overflow-hidden bg-[#0B0B15]">
+        {/* Sidebar */}
+        <aside className="h-full w-[220px] shrink-0">
+          <Sidebar />
+        </aside>
 
-        
-        <main className="min-w-0 flex-1 p-6 lg:p-8">
+        {/* Główna część aplikacji */}
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Header />
 
-          <div className="mt-8">
+          <main className="min-h-0 flex-1 overflow-y-auto p-6">
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/devices" element={<Placeholder title="Urządzenia" />} />
@@ -35,9 +38,8 @@ function App() {
               <Route path="/alerts" element={<Placeholder title="Alerty" />} />
               <Route path="/settings" element={<Placeholder title="Ustawienia" />} />
             </Routes>
-          </div>
-        </main>
-
+          </main>
+        </div>
       </div>
     </BrowserRouter>
   );

@@ -13,7 +13,7 @@ const menuItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-[#29243F] bg-[#100E20] px-4 py-6 text-white">
+    <aside className="flex h-full w-full shrink-0 flex-col border-r border-[#29243F] bg-[#100E20] px-4 py-6 text-white">
 
       {/* Logo */}
       <div className="mb-10 flex items-center gap-3 px-2">

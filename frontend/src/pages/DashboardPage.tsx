@@ -5,6 +5,9 @@ import StatsCard from "../components/dashboard/StatsCard";
 import type { DashboardSummary } from "../components/types/dashboard";
 import LatencyChart from "../components/dashboard/LatencyChart";
 import StatusDonut from "../components/dashboard/StatusDonut";
+import NetworkMap from "../components/dashboard/NetworkMap";
+import RecentEvents from "../components/dashboard/RecentEvents";
+import QuickActions from "../components/dashboard/QuickActions";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardSummary | null>(null);
@@ -61,7 +64,7 @@ export default function DashboardPage() {
 
       const result: { id: number; name: string }[] =
         await response.json();
-        
+
       setDevices(result);
 
       if (result.length > 0) {
@@ -163,9 +166,18 @@ export default function DashboardPage() {
     <div className="min-w-0">
       <StatusDonut data={data} />
     </div>
-    </div>
-    </section>
+  </div>
+  </section>
 
-    </div>
+  <section className="mt-6">
+    <NetworkMap />
+  </section>
+
+  <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+    <RecentEvents />
+    <QuickActions />
+  </section>
+
+  </div>
   );
 }

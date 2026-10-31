@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from app.database import SessionLocal, engine, Base
 from app.models import Device as DeviceModel, Measurement
 from app.schemas import DashboardSummaryResponse, DeviceCreate
-from app.schemas import  MeasurementResponse
+from app.schemas import  MeasurementResponse, EventResponse
 
 Base.metadata.create_all(bind=engine)
 
@@ -171,3 +171,53 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         "offline_devices": offline_devices,
         "unknown_devices": unknown_devices
     }
+
+@app.get("/events/recent", response_model=list[EventResponse])
+def get_recent_events(limit: int = Query(default=10, ge=1, le=100), offset: int = Query(default=0, ge=0), db: Session = Depends(get_db),):
+
+    measurements = (db.query(Measurement, DeviceModel).join(DeviceModel, Measurement.device_id == DeviceModel.id).order_by(Measurement.checked_at.asc(), Measurement.id.asc()).all())
+
+    previous_statuses = {}
+    events = []
+
+    for measurement, device in measurements:
+
+        device_id = measurement.device_id
+        current_status = measurement.status
+
+        if device_id not in previous_statuses:
+            if current_status in ("online", "no_response"):
+                previous_statuses[device_id] = current_status
+            continue
+
+        if current_status not in ("online", "no_response"):
+            continue
+
+        previous_status = previous_statuses[device_id]
+
+        if previous_status == current_status:
+            continue
+
+        if current_status == "online":
+            event_status = "online"
+            description = "Połączenie przywrócone"
+        else:
+            event_status = "offline"
+            description = "Utracono połączenie"
+
+        events.append(
+            EventResponse(
+                id=measurement.id,
+                device_id=device.id,
+                device_name=device.name,
+                status=event_status,
+                description=description,
+                created_at=measurement.checked_at,
+            )
+        )
+
+        previous_statuses[device_id] = current_status
+
+    events.reverse()
+
+    return events[offset:offset + limit]

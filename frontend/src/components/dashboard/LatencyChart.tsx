@@ -22,61 +22,81 @@ export default function LatencyChart({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (deviceId === null) {
-      setMeasurements([]);
-      return;
-    }
+  
+useEffect(() => {
+  if (deviceId === null) {
+    setMeasurements([]);
+    setLoading(false);
+    return;
+  }
 
-    const controller = new AbortController();
+  const controller = new AbortController();
 
-    async function fetchMeasurements() {
-      setLoading(true);
-      setError(null);
+  async function fetchMeasurements() {
+    try {
+      const response = await fetch(
+        `/api/devices/${deviceId}/measurements?limit=100&offset=0`,
+        { signal: controller.signal }
+      );
 
-      try {
-        const response = await fetch(
-          `/api/devices/${deviceId}/measurements?limit=100&offset=0`,
-          { signal: controller.signal }
-        );
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+      const data: Measurement[] = await response.json();
 
-        const data: Measurement[] = await response.json();
+      if (!controller.signal.aborted) {
         setMeasurements(data);
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          setError("Nie udało się pobrać historii pomiarów.");
-          console.error(err);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        setError(null);
+      }
+    } catch (err) {
+      if (!controller.signal.aborted) {
+        setError("Nie udało się pobrać historii pomiarów.");
+        console.error(err);
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setLoading(false);
       }
     }
+  }
 
+  setMeasurements([]);
+  setLoading(true);
+  setError(null);
+
+  void fetchMeasurements();
+
+  // Automatyczne odświeżanie co 30 sekund
+  const interval = window.setInterval(() => {
     void fetchMeasurements();
+  }, 30000);
 
-    return () => controller.abort();
+  return () => {
+    window.clearInterval(interval);
+    controller.abort();
+  };
   }, [deviceId]);
 
+
+  
   const chartData = [...measurements]
     .sort(
       (a, b) =>
         new Date(a.checked_at).getTime() -
-        new Date(b.checked_at).getTime()
+          new Date(b.checked_at).getTime() ||
+        a.id - b.id
     )
     .map((measurement) => ({
       id: measurement.id,
-      time: new Date(measurement.checked_at).toLocaleTimeString(
-        "pl-PL",
-        { hour: "2-digit", minute: "2-digit" }
-      ),
-      latency: measurement.latency_ms,
-    }));
+      timestamp: new Date(measurement.checked_at).getTime(),
+      latency:
+        measurement.status === "online"
+          ? measurement.latency_ms
+          : null,
+      status: measurement.status,
+  }));
+
 
   return (
     <div className="rounded-2xl border border-[#342B4E] bg-[#1D1930] p-6">
@@ -138,12 +158,23 @@ export default function LatencyChart({
                 vertical={false}
               />
 
+              
               <XAxis
-                dataKey="time"
+                dataKey="timestamp"
+                type="number"
+                scale="time"
+                domain={["dataMin", "dataMax"]}
                 stroke="#A1A1AA"
                 tick={{ fontSize: 11 }}
                 minTickGap={25}
+                tickFormatter={(timestamp: number) =>
+                  new Date(timestamp).toLocaleTimeString("pl-PL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                }
               />
+
 
               <YAxis
                 stroke="#A1A1AA"
@@ -152,6 +183,7 @@ export default function LatencyChart({
                 width={65}
               />
 
+              
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#100E20",
@@ -159,11 +191,15 @@ export default function LatencyChart({
                   borderRadius: "12px",
                   color: "#FFFFFF",
                 }}
+                labelFormatter={(timestamp) =>
+                  new Date(Number(timestamp)).toLocaleString("pl-PL")
+                }
                 formatter={(value) => [
                   value == null ? "Brak odpowiedzi" : `${value} ms`,
                   "Opóźnienie",
                 ]}
               />
+
 
               <Area
                 type="monotone"
@@ -173,6 +209,7 @@ export default function LatencyChart({
                 fill="url(#latencyGradient)"
                 connectNulls={false}
                 activeDot={{ r: 5, fill: "#C084FC" }}
+                isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>

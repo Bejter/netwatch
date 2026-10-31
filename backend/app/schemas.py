@@ -30,3 +30,13 @@ class DashboardSummaryResponse(BaseModel):
     online_devices: int
     offline_devices: int
     unknown_devices: int
+
+class EventResponse(BaseModel):
+    id: int
+    device_id: int
+    device_name: str
+    status: str
+    description: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes = True)
