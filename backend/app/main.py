@@ -24,7 +24,7 @@ def get_db():
 def health_check():
     return {"status": "healthy"}
 
-@app.post("/devices/")
+@app.post("/devices")
 def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
 
     db_device = DeviceModel(
@@ -42,7 +42,7 @@ def create_device(device: DeviceCreate, db: Session = Depends(get_db)):
 
     return db_device
 
-@app.get("/devices/")
+@app.get("/devices")
 def get_devices(is_active: bool = None, limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
 
     if is_active is not None:
