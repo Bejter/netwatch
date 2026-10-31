@@ -137,4 +137,18 @@ def get_device_stats(device_id: int, hours: int | None = Query(default=None, ge=
         "max_latency_ms": max_latency_ms
     }
 
-    
+@app.get("/dashboard/summary")
+def get_dashboard_summary(db: Session = Depends(get_db)):
+    total_devices = db.query(DeviceModel).count()
+    active_devices = db.query(DeviceModel).filter(DeviceModel.is_active == True).count()
+    online_devices = db.query(DeviceModel).join(Measurement, DeviceModel.id == Measurement.device_id).filter(Measurement.status == "online").distinct().count()
+    offline_devices = db.query(DeviceModel).join(Measurement, DeviceModel.id == Measurement.device_id).filter(Measurement.status == "no_response").distinct().count()
+    unknown_devices = db.query(DeviceModel).join(Measurement, DeviceModel.id == Measurement.device_id).filter(Measurement.status == "error").distinct().count()
+
+    return {
+        "total_devices": total_devices,
+        "active_devices": active_devices,
+        "online_devices": online_devices,
+        "offline_devices": offline_devices,
+        "unknown_devices": unknown_devices,
+    }
