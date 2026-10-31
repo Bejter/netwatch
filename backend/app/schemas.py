@@ -24,4 +24,9 @@ class MeasurementResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes = True)
 
-    
+class DashboardSummaryResponse(BaseModel):
+    total_devices: int
+    active_devices: int
+    online_devices: int
+    offline_devices: int
+    unknown_devices: int

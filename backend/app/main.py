@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.database import SessionLocal, engine, Base
 from app.models import Device as DeviceModel, Measurement
-from app.schemas import DeviceCreate
+from app.schemas import DashboardSummaryResponse, DeviceCreate
 from app.schemas import  MeasurementResponse
 
 Base.metadata.create_all(bind=engine)
@@ -137,18 +137,37 @@ def get_device_stats(device_id: int, hours: int | None = Query(default=None, ge=
         "max_latency_ms": max_latency_ms
     }
 
-@app.get("/dashboard/summary")
+
+@app.get("/dashboard/summary",response_model=DashboardSummaryResponse)
 def get_dashboard_summary(db: Session = Depends(get_db)):
+
     total_devices = db.query(DeviceModel).count()
-    active_devices = db.query(DeviceModel).filter(DeviceModel.is_active == True).count()
-    online_devices = db.query(DeviceModel).join(Measurement, DeviceModel.id == Measurement.device_id).filter(Measurement.status == "online").distinct().count()
-    offline_devices = db.query(DeviceModel).join(Measurement, DeviceModel.id == Measurement.device_id).filter(Measurement.status == "no_response").distinct().count()
-    unknown_devices = db.query(DeviceModel).join(Measurement, DeviceModel.id == Measurement.device_id).filter(Measurement.status == "error").distinct().count()
+    active_devices = db.query(DeviceModel).filter(DeviceModel.is_active == True).all()
+
+    online_devices = 0
+    offline_devices = 0
+    unknown_devices = 0
+
+    for device in active_devices:
+
+        last_measurement = db.query(Measurement).filter(Measurement.device_id == device.id).order_by(Measurement.checked_at.desc(),Measurement.id.desc()).first()
+
+        if last_measurement is None:
+            unknown_devices += 1
+
+        elif last_measurement.status == "online":
+            online_devices += 1
+
+        elif last_measurement.status == "no_response":
+            offline_devices += 1
+            
+        else:
+            unknown_devices += 1
 
     return {
         "total_devices": total_devices,
-        "active_devices": active_devices,
+        "active_devices": len(active_devices),
         "online_devices": online_devices,
         "offline_devices": offline_devices,
-        "unknown_devices": unknown_devices,
+        "unknown_devices": unknown_devices
     }
