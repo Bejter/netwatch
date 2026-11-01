@@ -5,12 +5,16 @@ import type { Device } from "./DeviceTable";
 
 interface DeviceFormModalProps {
   device?: Device | null;
+  initialIp?: string;
+  initialName?: string;
   onClose: () => void;
   onSaved: () => void;
 }
 
 export default function DeviceFormModal({
   device,
+  initialIp,
+  initialName,
   onClose,
   onSaved,
 }: DeviceFormModalProps) {
@@ -23,11 +27,11 @@ export default function DeviceFormModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setName(device?.name ?? "");
-    setIpAddress(device?.ip_address ?? "");
+    setName(device?.name ?? initialName ?? "");
+    setIpAddress(device?.ip_address ?? initialIp ?? "");
     setIsActive(device?.is_active ?? true);
     setError(null);
-  }, [device]);
+  }, [device, initialName, initialIp]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -157,7 +161,8 @@ export default function DeviceFormModal({
               onChange={(e) => setIpAddress(e.target.value)}
               placeholder="192.168.0.1"
               required
-              className="w-full rounded-xl border border-[#342B4E] bg-[#100E20] px-4 py-3 text-white outline-none transition focus:border-violet-500"
+              readOnly={!isEditing && Boolean(initialIp)}
+              className="w-full read-only:cursor-not-allowed read-only:opacity-70 rounded-xl border border-[#342B4E] bg-[#100E20] px-4 py-3 text-white outline-none transition focus:border-violet-500"
             />
           </div>
 

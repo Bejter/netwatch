@@ -1,7 +1,15 @@
+import { useState } from "react";
 
 import NetworkMap from "../components/dashboard/NetworkMap";
+import NetworkDiscovery from "../components/network/NetworkDiscovery";
 
 export default function NetworkPage() {
+  const [mapVersion, setMapVersion] = useState(0);
+
+  function handleDeviceAdded() {
+    setMapVersion((previous) => previous + 1);
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -10,11 +18,13 @@ export default function NetworkPage() {
         </h1>
 
         <p className="mt-1 text-sm text-zinc-400">
-          Monitoruj dostępność urządzeń w swojej sieci lokalnej
+          Wykrywaj urządzenia i monitoruj swoją sieć lokalną
         </p>
       </div>
 
-      <NetworkMap fullPage />
+      <NetworkDiscovery onDeviceAdded={handleDeviceAdded} />
+
+      <NetworkMap key={mapVersion} fullPage />
     </div>
   );
 }
