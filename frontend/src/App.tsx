@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/layout/sidebar";
 import Header from "./components/layout/Header";
 import DashboardPage from "./pages/DashboardPage";
+import DevicesPage from "./pages/DevicePage";
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -31,7 +32,7 @@ function App() {
           <main className="min-h-0 flex-1 overflow-y-auto p-6">
             <Routes>
               <Route path="/" element={<DashboardPage />} />
-              <Route path="/devices" element={<Placeholder title="Urządzenia" />} />
+              <Route path="/devices" element={<DevicesPage />} />
               <Route path="/network" element={<Placeholder title="Mapa sieci" />} />
               <Route path="/monitoring" element={<Placeholder title="Monitoring" />} />
               <Route path="/charts" element={<Placeholder title="Wykresy" />} />
