@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Monitor, Search } from "lucide-react";
+import { Monitor, Pencil, Search, Trash2 } from "lucide-react";
 
 export interface Device {
   id: number;
@@ -12,15 +12,19 @@ export interface Device {
 
 interface DeviceTableProps {
   devices: Device[];
+  onEdit: (device: Device) => void;
+  onDelete: (device: Device) => void;
 }
 
 export default function DeviceTable({
   devices,
+  onEdit,
+  onDelete,
 }: DeviceTableProps) {
   const [search, setSearch] = useState("");
 
   const filteredDevices = devices.filter((device) => {
-    const query = search.toLowerCase();
+    const query = search.trim().toLowerCase();
 
     return (
       device.name.toLowerCase().includes(query) ||
@@ -53,6 +57,7 @@ export default function DeviceTable({
               <th className="pb-4 font-medium">Adres IP</th>
               <th className="pb-4 font-medium">Monitoring</th>
               <th className="pb-4 font-medium">Data dodania</th>
+              <th className="pb-4 text-right font-medium">Akcje</th>
             </tr>
           </thead>
 
@@ -92,6 +97,30 @@ export default function DeviceTable({
 
                 <td className="py-4 text-sm text-zinc-400">
                   {new Date(device.created_at).toLocaleDateString("pl-PL")}
+                </td>
+
+                <td className="py-4">
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(device)}
+                      title="Edytuj urządzenie"
+                      aria-label={`Edytuj ${device.name}`}
+                      className="rounded-lg border border-violet-500/20 bg-violet-500/10 p-2 text-violet-400 transition hover:bg-violet-500/20"
+                    >
+                      <Pencil size={17} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onDelete(device)}
+                      title="Usuń urządzenie"
+                      aria-label={`Usuń ${device.name}`}
+                      className="rounded-lg border border-red-500/20 bg-red-500/10 p-2 text-red-400 transition hover:bg-red-500/20"
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

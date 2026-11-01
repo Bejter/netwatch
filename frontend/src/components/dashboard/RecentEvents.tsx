@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   CircleCheck,
-  History,
   RefreshCw,
   WifiOff,
 } from "lucide-react";

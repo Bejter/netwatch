@@ -16,7 +16,7 @@ class Measurement(Base):
     __tablename__ = "measurements"
 
     id = Column(Integer, primary_key=True, index=True)
-    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False)
+    device_id = Column(Integer, ForeignKey("devices.id", ondelete="CASCADE"), nullable=False)
     status = Column(String, nullable=False)
     latency_ms = Column(Float, nullable=True)
     checked_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

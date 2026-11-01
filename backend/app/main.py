@@ -6,8 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 from app.database import SessionLocal, engine, Base
 from app.models import Device as DeviceModel, Measurement
-from app.schemas import DashboardSummaryResponse, DeviceCreate
+from app.schemas import DashboardSummaryResponse, DeviceCreate, NetworkScanRequest
 from app.schemas import  MeasurementResponse, EventResponse
+from app.services.discovery.scanner import scan_network
 
 Base.metadata.create_all(bind=engine)
 
@@ -221,3 +222,13 @@ def get_recent_events(limit: int = Query(default=10, ge=1, le=100), offset: int 
     events.reverse()
 
     return events[offset:offset + limit]
+
+
+@app.post("/network/discover")
+async def discover_network(request: NetworkScanRequest):
+    try:
+        devices = await scan_network(request.network)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"discovered_devices": devices}

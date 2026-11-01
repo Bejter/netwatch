@@ -4,6 +4,7 @@ import Sidebar from "./components/layout/sidebar";
 import Header from "./components/layout/Header";
 import DashboardPage from "./pages/DashboardPage";
 import DevicesPage from "./pages/DevicePage";
+import NetworkPage from "./pages/NetworkPage";
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -33,7 +34,7 @@ function App() {
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/devices" element={<DevicesPage />} />
-              <Route path="/network" element={<Placeholder title="Mapa sieci" />} />
+              <Route path="/network" element={<NetworkPage />} />
               <Route path="/monitoring" element={<Placeholder title="Monitoring" />} />
               <Route path="/charts" element={<Placeholder title="Wykresy" />} />
               <Route path="/alerts" element={<Placeholder title="Alerty" />} />
