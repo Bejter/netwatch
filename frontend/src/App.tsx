@@ -5,6 +5,9 @@ import Header from "./components/layout/Header";
 import DashboardPage from "./pages/DashboardPage";
 import DevicesPage from "./pages/DevicePage";
 import NetworkPage from "./pages/NetworkPage";
+import MonitoringPage from "./pages/MonitoringPage";
+import ChartsPage from "./pages/ChartsPage";
+import AlertsPage from "./pages/AlertsPage";
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -35,9 +38,9 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/devices" element={<DevicesPage />} />
               <Route path="/network" element={<NetworkPage />} />
-              <Route path="/monitoring" element={<Placeholder title="Monitoring" />} />
-              <Route path="/charts" element={<Placeholder title="Wykresy" />} />
-              <Route path="/alerts" element={<Placeholder title="Alerty" />} />
+              <Route path="/monitoring" element={<MonitoringPage />} />
+              <Route path="/charts" element={<ChartsPage />} />
+              <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/settings" element={<Placeholder title="Ustawienia" />} />
             </Routes>
           </main>

@@ -24,9 +24,9 @@ export default function QuickActions() {
       title: "Skanuj sieć",
       description: "Wkrótce dostępne",
       icon: ScanSearch,
-      onClick: () => {},
-      enabled: false,
-      primary: false,
+      onClick: () => navigate("/network"),
+      enabled: true,
+      primary: true,
     },
     {
       title: "Generuj raport",
